@@ -356,14 +356,12 @@ if [ $CONFIGURE_BASH -eq 0 ]; then
     
     # Define the bash configuration content
     BASH_CONFIG='# UPDATED BASH CONFIGURATION
-# Creates a python venv and upgrades pip
-alias mkenv="python -m venv venv && source venv/bin/activate && python -m pip install --upgrade pip"
-
 # Aliases
 alias ll="ls -lah"
 alias so="source venv/bin/activate"
 
 # My functions
+# Creates a python venv and upgrades pip
 mkenv() {
   python -m venv venv && \
   source venv/bin/activate && \
