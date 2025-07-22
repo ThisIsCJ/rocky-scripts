@@ -359,7 +359,7 @@ mkenv() {
         # Show user selection menu
         exec 3>&1
         SELECTED_USER=$(dialog --title "Select User for Bash Configuration" \
-            --menu "Choose which user's .bashrc to configure:" 15 100 8 \
+            --menu "Choose which user's .bashrc to configure:" 15 120 8 \
             $USER_LIST \
             2>&1 1>&3)
         exec 3>&-
