@@ -240,7 +240,7 @@ if [ $RESIZE_PARTITION -eq 0 ]; then
     dialog --title "Partition Management" --infobox "Scanning available partitions..." 5 40
     
     # Get list of all partitions with their information
-    PARTITION_LIST=""
+    PARTITION_LIST=()
     while IFS= read -r line; do
         if [[ $line =~ ^/dev/ ]]; then
             DEVICE=$(echo "$line" | awk '{print $1}')
@@ -251,19 +251,19 @@ if [ $RESIZE_PARTITION -eq 0 ]; then
             
             # Skip if mount point is empty
             if [[ -n "$MOUNT" ]]; then
-                PARTITION_LIST="$PARTITION_LIST$DEVICE \"Size:$SIZE Used:$USED Avail:$AVAIL Mount:$MOUNT\" "
+                PARTITION_LIST+=("$DEVICE" "Size:$SIZE Used:$USED Avail:$AVAIL Mount:$MOUNT")
             fi
         fi
     done < <(df -h | grep "^/dev/")
     
-    if [[ -z "$PARTITION_LIST" ]]; then
+    if [[ ${#PARTITION_LIST[@]} -eq 0 ]]; then
         PARTITION_STATUS="Failed - no partitions found"
     else
         # Show partition selection menu
         exec 3>&1
         SELECTED_PARTITION=$(dialog --title "Select Partition to Expand" \
-            --menu "Choose the partition you want to expand:" 15 100 8 \
-            $PARTITION_LIST \
+            --menu "Choose the partition you want to expand:" 15 120 8 \
+            "${PARTITION_LIST[@]}" \
             2>&1 1>&3)
         exec 3>&-
         
@@ -345,22 +345,22 @@ mkenv() {
 }'
     
     # Get all users with home directories (excluding system users)
-    USER_LIST=""
+    USER_LIST=()
     while IFS=: read -r username _ uid _ _ home _; do
         # Include users with UID >= 1000 (regular users) and root
         if [[ $uid -ge 1000 || $uid -eq 0 ]] && [[ -d "$home" ]]; then
-            USER_LIST="$USER_LIST$username \"Home: $home\" "
+            USER_LIST+=("$username" "Home: $home")
         fi
     done < /etc/passwd
     
-    if [[ -z "$USER_LIST" ]]; then
+    if [[ ${#USER_LIST[@]} -eq 0 ]]; then
         BASH_STATUS="Failed - no user home directories found"
     else
         # Show user selection menu
         exec 3>&1
         SELECTED_USER=$(dialog --title "Select User for Bash Configuration" \
             --menu "Choose which user's .bashrc to configure:" 15 120 8 \
-            $USER_LIST \
+            "${USER_LIST[@]}" \
             2>&1 1>&3)
         exec 3>&-
         
