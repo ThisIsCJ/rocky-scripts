@@ -331,22 +331,19 @@ if [ $CONFIGURE_BASH -eq 0 ]; then
     dialog --title "Bash Configuration" --infobox "Configuring bash aliases and functions..." 5 50
     
     # Define the bash configuration content
-    BASH_CONFIG='
-
-# Creates a python venv and upgrades pip
+    BASH_CONFIG='# Creates a python venv and upgrades pip
 alias mkenv='python -m venv venv && source venv/bin/activate && python -m pip install --upgrade pip'
+
+# Aliases
+alias ll='ls -lah'
+alias so='source venv/bin/activate'
 
 # My functions
 mkenv() {
   python -m venv venv && \
   source venv/bin/activate && \
   pip install --upgrade pip
-}
-
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-'
+}'
     
     # Get all users with home directories (excluding system users)
     USER_LIST=()
