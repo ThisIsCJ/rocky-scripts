@@ -346,68 +346,29 @@ mkenv() {
   pip install --upgrade pip
 }'
     
-    # Get all users with home directories (excluding system users)
-    USER_LIST=()
-    while IFS=: read -r username _ uid _ _ home _; do
-        # Include users with UID >= 1000 (regular users) and root
-        if [[ $uid -ge 1000 || $uid -eq 0 ]] && [[ -d "$home" ]]; then
-            USER_LIST+=("$username" "Home: $home")
-        fi
-    done < /etc/passwd
+    # Use current user's .bashrc
+    BASHRC_FILE="$HOME/.bashrc"
+    CURRENT_USER=$(whoami)
     
-    if [[ ${#USER_LIST[@]} -eq 0 ]]; then
-        BASH_STATUS="Failed - no user home directories found"
-    else
-        # Show user selection menu
-        exec 3>&1
-        SELECTED_USER=$(dialog --title "Select User for Bash Configuration" \
-            --menu "Choose which user's .bashrc to configure:" 15 120 8 \
-            "${USER_LIST[@]}" \
-            2>&1 1>&3)
-        exec 3>&-
-        
-        if [ $? -eq 0 ] && [[ -n "$SELECTED_USER" ]]; then
-            # Get the user's home directory
-            USER_HOME=$(getent passwd "$SELECTED_USER" | cut -d: -f6)
-            BASHRC_FILE="$USER_HOME/.bashrc"
-            
-            # Confirm configuration
-            dialog --title "Confirm Bash Configuration" --yesno "Configure .bashrc for user: $SELECTED_USER\nFile: $BASHRC_FILE\n\nThis will add aliases and functions to the .bashrc file.\n\nProceed?" 10 60
-            
-            if [ $? -eq 0 ]; then
-                # Check if we can write to the target file/directory
-                if [[ ! -w "$(dirname "$BASHRC_FILE")" ]] && [[ "$SELECTED_USER" != "$(whoami)" ]]; then
-                    BASH_STATUS="Failed - insufficient permissions for $BASHRC_FILE"
-                else
-                    # Backup existing .bashrc if it exists
-                    if [[ -f "$BASHRC_FILE" ]]; then
-                        cp "$BASHRC_FILE" "$BASHRC_FILE.backup.$(date +%Y%m%d_%H%M%S)"
-                    fi
-                    
-                    # Check if our configuration already exists
-                    if grep -q "# Aliases" "$BASHRC_FILE" 2>/dev/null && grep -q "alias ll=" "$BASHRC_FILE" 2>/dev/null; then
-                        BASH_STATUS="Already configured - skipped to avoid duplicates"
-                    else
-                        # Add our configuration to .bashrc
-                        echo "$BASH_CONFIG" >> "$BASHRC_FILE"
-                        
-                        # Set proper ownership if we have permission (running as root or same user)
-                        if [[ "$(whoami)" == "root" ]] || [[ "$SELECTED_USER" == "$(whoami)" ]]; then
-                            if [[ "$(whoami)" == "root" ]]; then
-                                chown "$SELECTED_USER:$SELECTED_USER" "$BASHRC_FILE"
-                            fi
-                            BASH_STATUS="Successfully configured for user $SELECTED_USER"
-                        else
-                            BASH_STATUS="Configured for $SELECTED_USER (ownership may need adjustment)"
-                        fi
-                    fi
-                fi
-            else
-                BASH_STATUS="Cancelled by user"
-            fi
-        else
-            BASH_STATUS="Cancelled - no user selected"
+    # Confirm configuration
+    dialog --title "Confirm Bash Configuration" --yesno "Configure .bashrc for current user: $CURRENT_USER\nFile: $BASHRC_FILE\n\nThis will add aliases and functions to the .bashrc file.\n\nProceed?" 10 60
+    
+    if [ $? -eq 0 ]; then
+        # Backup existing .bashrc if it exists
+        if [[ -f "$BASHRC_FILE" ]]; then
+            cp "$BASHRC_FILE" "$BASHRC_FILE.backup.$(date +%Y%m%d_%H%M%S)"
         fi
+        
+        # Check if our configuration already exists
+        if grep -q "# UPDATED BASH CONFIGURATION" "$BASHRC_FILE" 2>/dev/null; then
+            BASH_STATUS="Already configured - skipped to avoid duplicates"
+        else
+            # Add our configuration to .bashrc
+            echo "$BASH_CONFIG" >> "$BASHRC_FILE"
+            BASH_STATUS="Successfully configured for user $CURRENT_USER"
+        fi
+    else
+        BASH_STATUS="Cancelled by user"
     fi
 else
     BASH_STATUS="Skipped by user"
@@ -465,4 +426,3 @@ case "$REBOOT_CHOICE" in
         clear
         ;;
 esac
-
