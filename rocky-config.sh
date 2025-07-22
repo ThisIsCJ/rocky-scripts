@@ -181,7 +181,7 @@ fi
 if [ $CHANGE_HOSTNAME -eq 0 ]; then
     # Prompt for hostname and domain using a single form
     exec 3>&1
-    form_data=$(dialog --title "Network Configuration" --form "Enter your hostname and domain:" 15 60 0 \
+    form_data=$(dialog --title "Network Configuration" --form "Enter your hostname and domain:" 15 80 0 \
         "Hostname:" 1 1 "" 1 12 40 0 \
         "Domain:" 2 1 "" 2 12 40 0 \
         2>&1 1>&3)
@@ -262,7 +262,7 @@ if [ $RESIZE_PARTITION -eq 0 ]; then
         # Show partition selection menu
         exec 3>&1
         SELECTED_PARTITION=$(dialog --title "Select Partition to Expand" \
-            --menu "Choose the partition you want to expand:" 15 80 8 \
+            --menu "Choose the partition you want to expand:" 15 100 8 \
             $PARTITION_LIST \
             2>&1 1>&3)
         exec 3>&-
@@ -273,7 +273,7 @@ if [ $RESIZE_PARTITION -eq 0 ]; then
             dialog --title "Confirm Partition Expansion" --yesno "You selected: $SELECTED_PARTITION\n\nCurrent info:\n$PARTITION_INFO\n\nProceed with expansion?" 12 70
             
             if [ $? -eq 0 ]; then
-                dialog --title "Disk Management" --infobox "Analyzing and expanding partition: $SELECTED_PARTITION..." 5 60
+                dialog --title "Disk Management" --infobox "Analyzing and expanding partition: $SELECTED_PARTITION..." 5 80
                 
                 # Get device information for selected partition
                 DISK_DEV=$(lsblk -no pkname "$SELECTED_PARTITION" 2>/dev/null)
