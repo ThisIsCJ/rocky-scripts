@@ -333,11 +333,11 @@ if [ $CONFIGURE_BASH -eq 0 ]; then
     # Define the bash configuration content
     BASH_CONFIG='# UPDATED BASH CONFIGURATION
 # Creates a python venv and upgrades pip
-alias mkenv='python -m venv venv && source venv/bin/activate && python -m pip install --upgrade pip'
+alias mkenv="python -m venv venv && source venv/bin/activate && python -m pip install --upgrade pip"
 
 # Aliases
-alias ll='ls -lah'
-alias so='source venv/bin/activate'
+alias ll="ls -lah"
+alias so="source venv/bin/activate"
 
 # My functions
 mkenv() {
@@ -350,12 +350,23 @@ mkenv() {
     BASHRC_FILE="$HOME/.bashrc"
     CURRENT_USER=$(whoami)
     
+    # Debug information
+    dialog --title "Debug Info" --msgbox "Current user: $CURRENT_USER\nHome directory: $HOME\nBashrc file: $BASHRC_FILE\nFile exists: $(test -f "$BASHRC_FILE" && echo "Yes" || echo "No")\nDirectory writable: $(test -w "$(dirname "$BASHRC_FILE")" && echo "Yes" || echo "No")" 10 60
+    
     # Confirm configuration
     dialog --title "Confirm Bash Configuration" --yesno "Configure .bashrc for current user: $CURRENT_USER\nFile: $BASHRC_FILE\n\nThis will add aliases and functions to the .bashrc file.\n\nProceed?" 10 60
     
     if [ $? -eq 0 ]; then
-        # Backup existing .bashrc if it exists
-        if [[ -f "$BASHRC_FILE" ]]; then
+        # Create .bashrc if it doesn't exist
+        if [[ ! -f "$BASHRC_FILE" ]]; then
+            if ! touch "$BASHRC_FILE"; then
+                BASH_STATUS="Failed - could not create $BASHRC_FILE"
+                dialog --title "Error" --msgbox "Failed to create $BASHRC_FILE" 6 50
+            fi
+        fi
+        
+        # Backup existing .bashrc if it exists and has content
+        if [[ -f "$BASHRC_FILE" ]] && [[ -s "$BASHRC_FILE" ]]; then
             cp "$BASHRC_FILE" "$BASHRC_FILE.backup.$(date +%Y%m%d_%H%M%S)"
         fi
         
@@ -363,10 +374,22 @@ mkenv() {
         if grep -q "# UPDATED BASH CONFIGURATION" "$BASHRC_FILE" 2>/dev/null; then
             BASH_STATUS="Already configured - skipped to avoid duplicates"
         else
-            # Add our configuration to .bashrc (no sudo needed for current user's home)
-            echo "" >> "$BASHRC_FILE"
-            echo "$BASH_CONFIG" >> "$BASHRC_FILE"
-            BASH_STATUS="Successfully configured for user $CURRENT_USER"
+            # Add our configuration to .bashrc
+            {
+                echo ""
+                echo "$BASH_CONFIG"
+            } >> "$BASHRC_FILE"
+            
+            if [[ $? -eq 0 ]]; then
+                # Verify the content was actually written
+                if grep -q "# UPDATED BASH CONFIGURATION" "$BASHRC_FILE" 2>/dev/null; then
+                    BASH_STATUS="Successfully configured for user $CURRENT_USER"
+                else
+                    BASH_STATUS="Failed - configuration not found after writing"
+                fi
+            else
+                BASH_STATUS="Failed - could not write to $BASHRC_FILE"
+            fi
         fi
     else
         BASH_STATUS="Cancelled by user"
