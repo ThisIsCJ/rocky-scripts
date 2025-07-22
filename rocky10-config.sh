@@ -363,7 +363,8 @@ mkenv() {
         if grep -q "# UPDATED BASH CONFIGURATION" "$BASHRC_FILE" 2>/dev/null; then
             BASH_STATUS="Already configured - skipped to avoid duplicates"
         else
-            # Add our configuration to .bashrc
+            # Add our configuration to .bashrc (no sudo needed for current user's home)
+            echo "" >> "$BASHRC_FILE"
             echo "$BASH_CONFIG" >> "$BASHRC_FILE"
             BASH_STATUS="Successfully configured for user $CURRENT_USER"
         fi
