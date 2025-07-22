@@ -99,7 +99,7 @@ bash rocky-setup.sh
 
 1. **Clone or download the scripts:**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/ThisIsCJ/rocky-scripts.git
    cd rocky-config
    ```
 
