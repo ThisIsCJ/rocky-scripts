@@ -363,10 +363,13 @@ alias so="source venv/bin/activate"
 # My functions
 # Creates a python venv and upgrades pip
 mkenv() {
-  python -m venv venv && \
-  source venv/bin/activate && \
-  pip install --upgrade pip
-}'
+  python -m venv venv
+  source venv/bin/activate
+  python -m pip install --upgrade pip
+  echo "Python version: $(python --version)"
+  echo "Pip version: $(pip --version)"
+}
+'
     
     # Use current user's .bashrc
     BASHRC_FILE="$HOME/.bashrc"
