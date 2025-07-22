@@ -331,7 +331,8 @@ if [ $CONFIGURE_BASH -eq 0 ]; then
     dialog --title "Bash Configuration" --infobox "Configuring bash aliases and functions..." 5 50
     
     # Define the bash configuration content
-    BASH_CONFIG='# Creates a python venv and upgrades pip
+    BASH_CONFIG='# UPDATED BASH CONFIGURATION
+# Creates a python venv and upgrades pip
 alias mkenv='python -m venv venv && source venv/bin/activate && python -m pip install --upgrade pip'
 
 # Aliases
@@ -457,9 +458,11 @@ case "$REBOOT_CHOICE" in
     "summary")
         dialog --title "Configuration Summary" --msgbox "$SUMMARY_TEXT" 20 80
         dialog --title "Complete" --msgbox "Configuration complete. Please remember to reboot when convenient." 8 60
+        clear
         ;;
     *)
         dialog --title "Complete" --msgbox "Configuration complete. Please remember to reboot when convenient." 8 60
+        clear
         ;;
 esac
-clear
+
