@@ -332,17 +332,21 @@ if [ $CONFIGURE_BASH -eq 0 ]; then
     
     # Define the bash configuration content
     BASH_CONFIG='
-# Aliases
-alias ll='\''ls -lah'\''
-alias so='\''source venv/bin/activate'\''
+
+# Creates a python venv and upgrades pip
+alias mkenv='python -m venv venv && source venv/bin/activate && python -m pip install --upgrade pip'
 
 # My functions
-# Make Python virtual environment and activate it and upgrade pip
 mkenv() {
   python -m venv venv && \
   source venv/bin/activate && \
   pip install --upgrade pip
-}'
+}
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+'
     
     # Get all users with home directories (excluding system users)
     USER_LIST=()
