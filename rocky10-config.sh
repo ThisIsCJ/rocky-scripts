@@ -105,9 +105,18 @@ if [ $UPDATE_SYSTEM -eq 0 ]; then
         # Show progress bar
         (
             echo "0"
+            local last_action="Initializing..."
             while kill -0 $dnf_pid 2>/dev/null; do
-                # Check log file for progress indicators
+                # Check log file for progress indicators and current action
                 if [[ -f "$log_file" ]]; then
+                    # Get the most recent action from the log
+                    local current_action=$(tail -5 "$log_file" 2>/dev/null | grep -E "(Installing|Upgrading|Removing|Downloading|Verifying|Running|Complete)" | tail -1 | sed 's/^[[:space:]]*//')
+                    
+                    # If we found a current action, use it; otherwise keep the last known action
+                    if [[ -n "$current_action" ]]; then
+                        last_action="$current_action"
+                    fi
+                    
                     # Count completed vs total operations based on log content
                     local total_packages=$(grep -c "Installing\|Upgrading\|Removing" "$log_file" 2>/dev/null || echo "0")
                     local completed_packages=$(grep -c "Installed\|Upgraded\|Removed" "$log_file" 2>/dev/null || echo "0")
@@ -118,10 +127,20 @@ if [ $UPDATE_SYSTEM -eq 0 ]; then
                             progress=100
                         fi
                         echo "$progress"
+                        echo "XXX"
+                        echo "$progress"
+                        echo "Current action: $last_action"
+                        echo "Progress: $completed_packages of $total_packages packages"
+                        echo "XXX"
                     else
-                        # If no package info yet, show pulsing progress
+                        # If no package info yet, show pulsing progress with current action
                         for i in {10..90..10}; do
                             echo "$i"
+                            echo "XXX"
+                            echo "$i"
+                            echo "Current action: $last_action"
+                            echo "Preparing package operations..."
+                            echo "XXX"
                             sleep 0.5
                             kill -0 $dnf_pid 2>/dev/null || break
                         done
@@ -130,7 +149,12 @@ if [ $UPDATE_SYSTEM -eq 0 ]; then
                 sleep 1
             done
             echo "100"
-        ) | dialog --title "$title" --gauge "Processing packages...\nPlease wait while the operation completes." 8 60 0
+            echo "XXX"
+            echo "100"
+            echo "Operation completed successfully!"
+            echo "All packages processed."
+            echo "XXX"
+        ) | dialog --title "$title" --gauge "Processing packages...\nPlease wait while the operation completes." 10 70 0
         
         # Wait for the process to complete and get exit status
         wait $dnf_pid
